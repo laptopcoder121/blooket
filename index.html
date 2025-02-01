@@ -40,45 +40,62 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const root = document.getElementById("root");
-            
+            let gameCode = new URLSearchParams(window.location.search).get("game");
             let gameStarted = false;
             let currentQuestion = 0;
             let score = 0;
-
             const questions = [
                 { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
                 { question: "What is the capital of France?", options: ["Berlin", "Paris", "Rome", "Madrid"], answer: "Paris" }
             ];
-
+            
+            function generateGameCode() {
+                return Math.random().toString(36).substr(2, 6).toUpperCase();
+            }
+            
             function renderHome() {
                 root.innerHTML = `
                     <div class="container">
                         <h1>Welcome to Quiz Game</h1>
-                        <button id="startGame">Start Game</button>
+                        <button id="hostGame">Host Game</button>
+                        <input type="text" id="gameCode" placeholder="Enter Game Code" />
+                        <button id="joinGame">Join Game</button>
                     </div>
                 `;
-                document.getElementById("startGame").addEventListener("click", startGame);
+                document.getElementById("hostGame").addEventListener("click", hostGame);
+                document.getElementById("joinGame").addEventListener("click", joinGame);
             }
-
+            
+            function hostGame() {
+                gameCode = generateGameCode();
+                window.location.href = `?game=${gameCode}`;
+            }
+            
+            function joinGame() {
+                const inputCode = document.getElementById("gameCode").value.trim().toUpperCase();
+                if (inputCode) {
+                    window.location.href = `?game=${inputCode}`;
+                }
+            }
+            
             function startGame() {
                 gameStarted = true;
                 renderQuestion();
             }
-
+            
             function renderQuestion() {
                 if (currentQuestion >= questions.length) {
                     root.innerHTML = `<div class="container"><h2>Game Over! Your Score: ${score}</h2></div>`;
                     return;
                 }
-
                 const q = questions[currentQuestion];
                 root.innerHTML = `
                     <div class="container">
+                        <h2>Game Code: ${gameCode}</h2>
                         <h2>${q.question}</h2>
                         <div id="options"></div>
                     </div>
                 `;
-                
                 const optionsContainer = document.getElementById("options");
                 q.options.forEach(option => {
                     const btn = document.createElement("button");
@@ -87,7 +104,7 @@
                     optionsContainer.appendChild(btn);
                 });
             }
-
+            
             function handleAnswer(selected, correct, btn) {
                 if (selected === correct) {
                     score++;
@@ -100,8 +117,12 @@
                     renderQuestion();
                 }, 1000);
             }
-
-            renderHome();
+            
+            if (gameCode) {
+                startGame();
+            } else {
+                renderHome();
+            }
         });
     </script>
 </body>
