@@ -1,0 +1,108 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #cce7ff;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .correct {
+            background-color: green;
+        }
+        .wrong {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const root = document.getElementById("root");
+            
+            let gameStarted = false;
+            let currentQuestion = 0;
+            let score = 0;
+
+            const questions = [
+                { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
+                { question: "What is the capital of France?", options: ["Berlin", "Paris", "Rome", "Madrid"], answer: "Paris" }
+            ];
+
+            function renderHome() {
+                root.innerHTML = `
+                    <div class="container">
+                        <h1>Welcome to Quiz Game</h1>
+                        <button id="startGame">Start Game</button>
+                    </div>
+                `;
+                document.getElementById("startGame").addEventListener("click", startGame);
+            }
+
+            function startGame() {
+                gameStarted = true;
+                renderQuestion();
+            }
+
+            function renderQuestion() {
+                if (currentQuestion >= questions.length) {
+                    root.innerHTML = `<div class="container"><h2>Game Over! Your Score: ${score}</h2></div>`;
+                    return;
+                }
+
+                const q = questions[currentQuestion];
+                root.innerHTML = `
+                    <div class="container">
+                        <h2>${q.question}</h2>
+                        <div id="options"></div>
+                    </div>
+                `;
+                
+                const optionsContainer = document.getElementById("options");
+                q.options.forEach(option => {
+                    const btn = document.createElement("button");
+                    btn.textContent = option;
+                    btn.addEventListener("click", () => handleAnswer(option, q.answer, btn));
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            function handleAnswer(selected, correct, btn) {
+                if (selected === correct) {
+                    score++;
+                    btn.classList.add("correct");
+                } else {
+                    btn.classList.add("wrong");
+                }
+                setTimeout(() => {
+                    currentQuestion++;
+                    renderQuestion();
+                }, 1000);
+            }
+
+            renderHome();
+        });
+    </script>
+</body>
+</html>
