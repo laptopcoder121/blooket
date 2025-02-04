@@ -45,9 +45,11 @@
             let currentQuestion = 0;
             let score = 0;
             let maxQuestions = 5;
-            let timerDuration = 30; 
+            let timerDuration = 30;
             let useTimer = false;
             let interval;
+            let isHost = false;
+            
             const allQuestions = [
                 { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
                 { question: "What is the capital of France?", options: ["Berlin", "Paris", "Rome", "Madrid"], answer: "Paris" },
@@ -55,15 +57,18 @@
                 { question: "Who wrote Hamlet?", options: ["Shakespeare", "Hemingway", "Austen", "Dickens"], answer: "Shakespeare" }
             ];
             let questions = [];
+            
             function shuffle(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [array[i], array[j]] = [array[j], array[i]];
                 }
             }
+            
             function generateGameCode() {
                 return Math.random().toString(36).substr(2, 6).toUpperCase();
             }
+            
             function renderHome() {
                 root.innerHTML = `
                     <div class="container">
@@ -76,16 +81,20 @@
                 document.getElementById("hostGame").addEventListener("click", hostGame);
                 document.getElementById("joinGame").addEventListener("click", joinGame);
             }
+            
             function hostGame() {
                 gameCode = generateGameCode();
-                window.location.href = `?game=${gameCode}`;
+                isHost = true;
+                window.location.href = `?game=${gameCode}&host=true`;
             }
+            
             function joinGame() {
                 const inputCode = document.getElementById("gameCode").value.trim().toUpperCase();
                 if (inputCode) {
                     window.location.href = `?game=${inputCode}`;
                 }
             }
+            
             function startGame() {
                 gameStarted = true;
                 shuffle(allQuestions);
@@ -95,6 +104,7 @@
                 }
                 renderQuestion();
             }
+            
             function startTimer() {
                 let timeLeft = timerDuration;
                 interval = setInterval(() => {
@@ -106,6 +116,7 @@
                     }
                 }, 1000);
             }
+            
             function renderQuestion() {
                 if (currentQuestion >= questions.length) {
                     endGame();
@@ -127,6 +138,7 @@
                     optionsContainer.appendChild(btn);
                 });
             }
+            
             function handleAnswer(selected, correct, btn) {
                 if (selected === correct) {
                     score++;
@@ -139,13 +151,20 @@
                     renderQuestion();
                 }, 1000);
             }
+            
             function endGame() {
                 clearInterval(interval);
                 root.innerHTML = `<div class="container"><h2>Game Over! Your Score: ${score}</h2><p>Leaderboard feature coming soon!</p></div>`;
             }
+            
             if (gameCode) {
-                root.innerHTML = `<div class="container"><h2>Waiting for Host to Start...</h2><button id="startGame">Start Game</button></div>`;
-                document.getElementById("startGame").addEventListener("click", startGame);
+                isHost = new URLSearchParams(window.location.search).get("host") === "true";
+                if (isHost) {
+                    root.innerHTML = `<div class="container"><h2>Waiting for Players...</h2><button id="startGame">Start Game</button></div>`;
+                    document.getElementById("startGame").addEventListener("click", startGame);
+                } else {
+                    root.innerHTML = `<div class="container"><h2>Waiting for Host to Start...</h2></div>`;
+                }
             } else {
                 renderHome();
             }
